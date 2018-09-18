@@ -20,7 +20,7 @@ __author__ = "amanaksu@gmail.com"
 # - log_cmd 는 로그 정보 화면 출력여부를 결정하는 Bool형 Flag (True : 화면 출력, False : 파일 출력)
 #########################################################################################################
 log_level       = "debug"
-log_path        = r""
+log_path        = r"C:\Users\amanaksu\Desktop\Kei\Log"
 log_cmd         = True
 
 
@@ -116,7 +116,7 @@ extend          = "dmp"
 # - clear_temp 는 임시 폴더 내 dir_q_monitor 폴더를 제외한 파일 삭제 여부. 
 # - clear_q_monitor 는 임시 폴더 내 큐 모니터용 폴더 삭제 여부 
 #########################################################################################################
-temp_path       = r""
+temp_path       = r"C:\Users\amanaksu\Desktop\Kei\Temp"
 clear_temp      = True
 clear_q_monitor = False
 
@@ -126,14 +126,14 @@ clear_q_monitor = False
 # - mws_key 는 malwares.com 연동시 사용할 개인키 
 #########################################################################################################
 mws_flag        = False
-mws_key         = ""
+mws_key         = "EC1667E9663D032ED2AB80890F432F0FF380FB30276FF5A31CC4486AD543E0E2"
 mws_save_folder = "malwares"
 
 #########################################################################################################
 # Yara 룰셋 
 # - format_rules 는 포멧 분류를 위한 Yara 룰 폴더 또는 파일 
 #########################################################################################################
-format_rules    = r""
+format_rules    = r"C:\Users\amanaksu\Desktop\Kei\Yara\files.yara"
 exploit_rules   = r""
 
 #########################################################################################################

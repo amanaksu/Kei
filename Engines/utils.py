@@ -532,6 +532,10 @@ def convert_dict2json(dict_data):
     return json.dump(dict_data)
 
 @gateway
+def convert_dict2serialize(dict_data):
+    return json.dumps(dict_data)
+
+@gateway
 def compress(normal_data):
     try:
         return zlib.compress(normal_data)

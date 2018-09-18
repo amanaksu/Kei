@@ -371,9 +371,10 @@ class EngineProcess:
         self.task_queue.put(task)
 
     def get_result(self):
-        json_data = utils.decompress(self.result_queue.get())
-        return type("ScanObject", (object,), dict_data)
-        
+        serialized_data = utils.decompress(self.result_queue.get())
+        # return serialized_data
+        return type("ScanObject", (object,), serialized_data)
+
     def __run__(self, task_queue, result_queue):
         error = False
         err_msg = ""
@@ -397,19 +398,11 @@ class EngineProcess:
             # 분석
             self.run(scanResult, scanObject)
 
-            # 분석 결과를 반환한다. 
-            import json
-            json_data = json.dumps(scanObject.to_dict(), default=serialize)
-            result_queue.put(utils.compress(json_data))
-
-            Log.debug("OK!!!")
-
         except:
             # 에러로그를 작성한다. 
             _, msg, obj = sys.exc_info()
             msg = "{} ({}::{})".format(msg, obj.tb_lineno, obj.tb_frame.f_globals.get("__file__"))
             Log.error(msg)
-            # result_queue.put(None)
             
             # 에러 상태를 업데이트한다. 
             error = True
@@ -417,7 +410,13 @@ class EngineProcess:
             
         finally:
             # 후처리
+            # 분석 결과를 저장한다.             
             scanObject.updateResult(error, err_msg)
+
+            # 분석 결과를 반환한다. 
+            dict_data = scanObject.to_dict()
+            serialized_data = utils.convert_dict2serialize(dict_data)
+            result_queue.put(utils.compress(serialized_data))
 
     def run(self, scanResult, scanObject):
         """[summary]
@@ -507,13 +506,19 @@ class ResultObject(object):
             self.err_msg = err_msg
 
     def get(self):
-        return self.__dict__
+        dict_data = self.__dict__
+        for key, value in self.__dict__.items():
+            if hasattr(value, "get"):
+                dict_data[key] = getattr(value, "get")()
+                
+        return dict_data
+
+
 
 
 class FormatObjectError:
     def __init__(self, msg):
         self.msg = msg
-
 
 class FormatObject:
     def __init__(self, meta):
@@ -548,9 +553,24 @@ class FormatObject:
         else:
             self.struct.update({key : value})
 
-    def get(self):
-        return self.__dict__
+    def get(self, dict_data={}):
+        if not dict_data:
+            dict_data = self.__dict__
+        
+        result_data = utils.deepcopy(dict_data)
+        for key, value in dict_data.items():
+            if isinstance(value, dict):
+                ret_value = self.get(dict_data=value)
+                result_data[key] = ret_value
 
+            elif hasattr(value, "get"):
+                ret_value = getattr(value, "get")()
+                if isinstance(value, dict):
+                    ret_value = self.get(dict_data=value)
+
+                result_data[key] = ret_value
+
+        return result_data
     
 class ScanObject(FileObject):
     def __init__(self, fileName="", uniqID="", depth=0, parentID="", parentName="", fformat=None, internal_path=""):
@@ -716,6 +736,8 @@ class ScanObject(FileObject):
             err {bool} -- [description] 에러 여부 
             err_msg {str} -- [description] 에러 정보
         """
+        if not isinstance(self.result, ResultObject):
+            raise ValueError
         self.result.updateResultObject(err, err_msg)
 
     def get_uid(self):
@@ -746,14 +768,12 @@ class ScanObject(FileObject):
         return self.internal_path
 
     def to_dict(self):
-        return self.__dict__
-
-        # result = self.__dict__
-        # for key, value in self.__dict__.items():
-        #     if isinstance(value, [FormatObject, ResultObject]):
-        #         result[key] = value.get()
+        result = self.__dict__
+        for key, value in self.__dict__.items():
+            if isinstance(value, (FormatObject, ResultObject)):
+                result[key] = value.get()
                 
-        # return result
+        return result
 
 class ScanResult:
     def __init__(self, rootUID=""):

@@ -59,7 +59,12 @@ class OleDirectoryObject:
     @gateway
     def get(self):
         try:
-            return self.__dict__
+            result = self.__dict__
+            for key, value in self.__dict__.items():
+                if hasattr(value, "get"):
+                    result[key] = getattr(value, "get")()
+                    
+            return result
 
         except:
             _, msg, obj = sys.exc_info()
