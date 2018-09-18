@@ -35,7 +35,7 @@ class MWSError(Exception):
 def get_tag_search(tag, start_time, end_time, limit):
     try:
         params = {"api_key": config.mws_key, "tag": tag, "start":start_time, "end":end_time, "limit": str(limit)}
-        response = requests.get("https://private.api.malwares.com/v3/tag/search", params=params)
+        response = requests.get("https://public.api.malwares.com/v3/tag/search", params=params)
         json_response = response.json()
         if json_response["result_code"] == 1:
             return json_response["list"]
@@ -59,7 +59,7 @@ def get_tag_search(tag, start_time, end_time, limit):
 def get_file_download(file_hash):
     try:
         params = {"api_key": config.mws_key, "hash": file_hash}
-        response = requests.get("https://private.api.malwares.com/v3/file/download", params=params)
+        response = requests.get("https://{유료 URL}/v3/file/download", params=params)
         return response.content
 
     except:
